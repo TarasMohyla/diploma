@@ -1,8 +1,209 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Кабінет лікаря</h2>
-<table class="table table-striped bg-white">
-<tr><th>ID</th><th>Пацієнт</th><th>Лікар</th><th>Дата</th><th>Час</th><th>Статус</th></tr>
-{% for a in appointments %}<tr><td>{{ a.id }}</td><td>{{ a.patient.full_name }}</td><td>{{ a.doctor.full_name }}</td><td>{{ a.slot.slot_date }}</td><td>{{ a.slot.slot_time }}</td><td>{{ a.status }}</td></tr>{% endfor %}
-</table>
+
+{% set months_short = ['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру'] %}
+
+<!-- Page header -->
+<div class="ma-header" style="margin-bottom:20px">
+  <div>
+    <h2 class="ma-title">Кабінет лікаря</h2>
+    <p class="ma-sub">Перегляд усіх записів пацієнтів до лікарів</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="background:var(--blue-light);border:1px solid var(--blue-medium);border-radius:var(--radius);padding:8px 14px;font-size:13px;font-weight:600;color:var(--blue)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Сьогодні: {{ stats.today }} записів
+    </div>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="ma-stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px">
+  <div class="ma-stat-card">
+    <div class="ma-stat-icon" style="background:#EFF6FF">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div>
+      <div class="ma-stat-num">{{ stats.total }}</div>
+      <div class="ma-stat-label">Всього записів</div>
+    </div>
+  </div>
+  <div class="ma-stat-card">
+    <div class="ma-stat-icon" style="background:#EFF6FF">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    </div>
+    <div>
+      <div class="ma-stat-num" style="color:var(--blue)">{{ stats.today }}</div>
+      <div class="ma-stat-label">На сьогодні</div>
+    </div>
+  </div>
+  <div class="ma-stat-card">
+    <div class="ma-stat-icon" style="background:#F0FDF4">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10" stroke="white" stroke-width="1.5" fill="none"/></svg>
+    </div>
+    <div>
+      <div class="ma-stat-num" style="color:#16A34A">{{ stats.confirmed }}</div>
+      <div class="ma-stat-label">Підтверджені</div>
+    </div>
+  </div>
+  <div class="ma-stat-card">
+    <div class="ma-stat-icon" style="background:#FFF7ED">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+    <div>
+      <div class="ma-stat-num" style="color:#EA580C">{{ stats.cancelled }}</div>
+      <div class="ma-stat-label">Скасовані</div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter tabs -->
+<div class="dd-tabs" id="filterTabs">
+  <button class="dd-tab active" onclick="filterAppts('all',this)">Усі записи</button>
+  <button class="dd-tab" onclick="filterAppts('today',this)">Сьогодні</button>
+  <button class="dd-tab" onclick="filterAppts('confirmed',this)">Підтверджені</button>
+  <button class="dd-tab" onclick="filterAppts('cancelled',this)">Скасовані</button>
+</div>
+
+<!-- Appointment list -->
+{% if appointments %}
+<div class="ma-list" id="apptList">
+  {% for a in appointments %}
+    {% set sd = a.slot.slot_date %}
+    {% set st = a.slot.slot_time %}
+    {% set day  = sd[8:10] %}
+    {% set mon  = (sd[5:7]|int) - 1 %}
+    {% set year = sd[:4] %}
+    {% set is_cancelled = a.status == 'cancelled' %}
+    {% set is_today = sd == today %}
+    {% set is_pat_female = a.patient.full_name.split()[-1].endswith('на') or a.patient.full_name.split()[-1].endswith('вна') %}
+    {% set apt_num = 'АРТ-' ~ sd[:4] ~ '-' ~ sd[5:7] ~ sd[8:10] ~ '-' ~ st.replace(':','') %}
+
+    <div class="ma-card {% if is_cancelled %}ma-card-cancelled{% endif %} dd-appt-item"
+         data-status="{{ a.status }}"
+         data-date="{{ sd }}">
+
+      <!-- Date -->
+      <div class="ma-date-col">
+        <div class="ma-date-day" {% if is_today %}style="color:#16A34A"{% endif %}>{{ day }}</div>
+        <div class="ma-date-mon">{{ months_short[mon] }}</div>
+        <div class="ma-date-year">{{ year }}</div>
+        {% if is_today %}
+        <div style="font-size:9px;font-weight:700;color:#16A34A;margin-top:2px;letter-spacing:.03em">СЬОГОДНІ</div>
+        {% endif %}
+      </div>
+
+      <div class="ma-vert-div"></div>
+
+      <!-- Patient avatar -->
+      <div class="ma-avatar">
+        {% if is_pat_female %}
+        <svg viewBox="0 0 72 80" fill="none" width="52" height="58">
+          <circle cx="36" cy="26" r="16" fill="#FDDCB5"/>
+          <path d="M10 72 Q10 54 36 54 Q62 54 62 72" fill="{% if is_cancelled %}#CBD5E1{% else %}#FDE68A{% endif %}"/>
+          <ellipse cx="36" cy="14" rx="17" ry="9" fill="#92400E"/>
+          <path d="M19 22 Q20 38 36 40 Q52 38 53 22" fill="#FDDCB5"/>
+          <rect x="28" y="50" width="16" height="24" rx="4" fill="white"/>
+        </svg>
+        {% else %}
+        <svg viewBox="0 0 72 80" fill="none" width="52" height="58">
+          <circle cx="36" cy="26" r="16" fill="#FDDCB5"/>
+          <path d="M10 72 Q10 54 36 54 Q62 54 62 72" fill="{% if is_cancelled %}#CBD5E1{% else %}#FDE68A{% endif %}"/>
+          <path d="M20 20 Q20 8 36 8 Q52 8 52 20" fill="#374151"/>
+          <path d="M19 22 Q20 38 36 40 Q52 38 53 22" fill="#FDDCB5"/>
+          <rect x="28" y="50" width="16" height="24" rx="4" fill="white"/>
+        </svg>
+        {% endif %}
+      </div>
+
+      <!-- Patient + doctor info -->
+      <div class="ma-info" style="flex:1.2">
+        <div class="ma-info-top">
+          <span class="ma-doc-name">{{ a.patient.full_name }}</span>
+          <span style="font-size:11px;color:var(--muted);font-weight:500">Пацієнт</span>
+        </div>
+        <div class="ma-info-meta">
+          <span class="ma-meta-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            {{ a.doctor.full_name }}
+          </span>
+          {% if a.preliminary_diagnosis %}
+          <span class="ma-meta-item" style="color:#64748B">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            {{ a.preliminary_diagnosis[:40] }}{% if a.preliminary_diagnosis|length > 40 %}…{% endif %}
+          </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Specialty + time -->
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:150px;flex-shrink:0">
+        <span class="ma-spec-tag" style="align-self:flex-start">{{ a.recommended_specialty }}</span>
+        <div class="ma-meta-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          {{ st }}
+        </div>
+        <div class="ma-meta-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          {{ a.doctor.room }}
+        </div>
+        <div style="font-family:monospace;font-size:10px;color:#94A3B8">{{ apt_num }}</div>
+      </div>
+
+      <!-- Status -->
+      <div class="ma-action-col" style="margin-left:16px">
+        {% if is_cancelled %}
+          <span class="badge ma-badge-red">Скасовано</span>
+        {% else %}
+          <span class="badge badge-green">Підтверджено</span>
+        {% endif %}
+      </div>
+
+    </div>
+  {% endfor %}
+</div>
+
+<!-- No results message (hidden by default) -->
+<div id="noResults" style="display:none" class="ma-empty">
+  <div class="ma-empty-icon">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  </div>
+  <div class="ma-empty-title">Записів не знайдено</div>
+  <div class="ma-empty-sub">Спробуйте інший фільтр</div>
+</div>
+
+{% else %}
+<div class="ma-empty">
+  <div class="ma-empty-icon">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </div>
+  <div class="ma-empty-title">Записів ще немає</div>
+  <div class="ma-empty-sub">Тут з'являться записи пацієнтів після їх створення</div>
+</div>
+{% endif %}
+
+<script>
+const todayStr = "{{ today }}";
+
+function filterAppts(type, btn) {
+  document.querySelectorAll('.dd-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  const items = document.querySelectorAll('.dd-appt-item');
+  let visible = 0;
+  items.forEach(item => {
+    let show = false;
+    if (type === 'all')       show = true;
+    else if (type === 'today')     show = item.dataset.date === todayStr;
+    else if (type === 'confirmed') show = item.dataset.status === 'confirmed';
+    else if (type === 'cancelled') show = item.dataset.status === 'cancelled';
+    item.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  const noRes = document.getElementById('noResults');
+  if (noRes) noRes.style.display = visible === 0 ? '' : 'none';
+}
+</script>
+
 {% endblock %}

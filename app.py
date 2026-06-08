@@ -212,20 +212,40 @@ def register_routes(app):
     @role_required("doctor")
     def doctor_dashboard():
         appointments = Appointment.query.order_by(Appointment.id.desc()).all()
-        return render_template("doctor_dashboard.html", appointments=appointments)
+        today = date.today().isoformat()
+        stats = {
+            "total":     len(appointments),
+            "today":     sum(1 for a in appointments if a.slot.slot_date == today),
+            "confirmed": sum(1 for a in appointments if a.status == "confirmed"),
+            "cancelled": sum(1 for a in appointments if a.status == "cancelled"),
+        }
+        return render_template("doctor_dashboard.html", appointments=appointments,
+                               stats=stats, today=today)
 
     @app.route("/admin")
     @login_required
     @role_required("admin")
     def admin_panel():
+        today = date.today().isoformat()
+        all_appointments = Appointment.query.all()
+        # appointments per weekday (Mon=0..Sun=6)
+        from datetime import datetime
+        week_counts = [0] * 7
+        for a in all_appointments:
+            try:
+                wd = datetime.strptime(a.slot.slot_date, "%Y-%m-%d").weekday()
+                week_counts[wd] += 1
+            except Exception:
+                pass
         stats = {
-            "doctors": Doctor.query.count(),
+            "doctors":    Doctor.query.count(),
             "specialties": Specialty.query.count(),
-            "symptoms": Symptom.query.count(),
-            "slots": ScheduleSlot.query.count(),
-            "appointments": Appointment.query.count(),
+            "today_appts": sum(1 for a in all_appointments if a.slot.slot_date == today),
+            "free_slots":  ScheduleSlot.query.filter_by(is_available=True).count(),
         }
-        return render_template("admin_panel.html", stats=stats)
+        doctors = Doctor.query.order_by(Doctor.id.desc()).limit(5).all()
+        return render_template("admin_panel.html", stats=stats,
+                               doctors=doctors, week_counts=week_counts)
 
     @app.route("/pro-systemu")
     def pro_systemu():

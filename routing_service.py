@@ -22,7 +22,7 @@ def recommend_specialty(symptom_ids):
 
     if not scores:
         specialty = Specialty.query.filter_by(name=DEFAULT_SPECIALTY_NAME).first()
-        return specialty, {}, symptom_names
+        return specialty, {}, symptom_names, []
 
     best_specialty_id = max(scores, key=scores.get)
     specialty = Specialty.query.get(best_specialty_id)
@@ -33,4 +33,20 @@ def recommend_specialty(symptom_ids):
         if item:
             named_scores[item.name] = score
 
-    return specialty, named_scores, symptom_names
+    # Top 2 symptoms that contributed most to the best specialty
+    best_rules = sorted(
+        [r for r in rules if r.specialty_id == best_specialty_id],
+        key=lambda r: r.weight, reverse=True,
+    )
+    seen = set()
+    top_symp_names = []
+    for rule in best_rules:
+        if rule.symptom_id not in seen:
+            symp = next((s for s in symptoms if s.id == rule.symptom_id), None)
+            if symp:
+                top_symp_names.append(symp.name)
+                seen.add(rule.symptom_id)
+        if len(top_symp_names) >= 2:
+            break
+
+    return specialty, named_scores, symptom_names, top_symp_names

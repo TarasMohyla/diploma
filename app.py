@@ -1,4 +1,5 @@
 from functools import wraps
+from datetime import date
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -53,7 +54,8 @@ def register_routes(app):
 
     @app.route("/")
     def index():
-        return render_template("index.html")
+        featured_doctors = Doctor.query.limit(3).all()
+        return render_template("index.html", featured_doctors=featured_doctors)
 
     @app.route("/register", methods=["GET", "POST"])
     def register():
@@ -118,15 +120,25 @@ def register_routes(app):
         if request.method == "POST":
             symptom_ids = request.form.getlist("symptoms")
             diagnosis = request.form.get("diagnosis", "").strip()
-            if not symptom_ids and not diagnosis:
+            symptoms_description = request.form.get("symptoms_description", "").strip()
+            duration = request.form.get("duration", "")
+            intensity = request.form.get("intensity", "")
+            if not symptom_ids and not diagnosis and not symptoms_description:
                 flash("Оберіть симптоми або введіть попередній діагноз.")
-                return render_template("symptoms.html", symptoms=all_symptoms)
-            specialty, scores, symptom_names = recommend_specialty(symptom_ids)
-            session["last_diagnosis"] = diagnosis
+                return render_template("symptoms.html", symptoms=all_symptoms, today=date.today().isoformat())
+            specialty, scores, symptom_names, top_symptoms = recommend_specialty(symptom_ids)
+            session["last_diagnosis"] = diagnosis or symptoms_description
             session["last_symptoms"] = ", ".join(symptom_names)
+            desired_date = request.form.get("desired_date", "")
+            session["last_duration"] = duration
+            session["last_intensity"] = intensity
+            session["last_desired_date"] = desired_date
             session["recommended_specialty_id"] = specialty.id if specialty else None
-            return render_template("recommendation.html", specialty=specialty, scores=scores, symptoms=symptom_names, diagnosis=diagnosis)
-        return render_template("symptoms.html", symptoms=all_symptoms)
+            top_score = max(scores.values()) if scores else 0
+            return render_template("recommendation.html", specialty=specialty, scores=scores,
+                                   symptoms=symptom_names, diagnosis=diagnosis or symptoms_description,
+                                   top_symptoms=top_symptoms, top_score=top_score)
+        return render_template("symptoms.html", symptoms=all_symptoms, today=date.today().isoformat())
 
     @app.route("/doctors")
     @login_required
@@ -135,7 +147,8 @@ def register_routes(app):
         specialty_id = request.args.get("specialty_id") or session.get("recommended_specialty_id")
         specialty = Specialty.query.get(specialty_id) if specialty_id else None
         items = Doctor.query.filter_by(specialty_id=specialty.id).all() if specialty else Doctor.query.all()
-        return render_template("doctors.html", doctors=items, specialty=specialty)
+        all_specialties = Specialty.query.order_by(Specialty.name).all()
+        return render_template("doctors.html", doctors=items, specialty=specialty, all_specialties=all_specialties)
 
     @app.route("/doctor/<int:doctor_id>")
     @login_required
@@ -175,7 +188,24 @@ def register_routes(app):
     def my_appointments():
         patient = Patient.query.filter_by(user_id=session["user_id"]).first_or_404()
         appointments = Appointment.query.filter_by(patient_id=patient.id).order_by(Appointment.id.desc()).all()
-        return render_template("my_appointments.html", appointments=appointments)
+        today = date.today().isoformat()
+        upcoming  = sum(1 for a in appointments if a.slot.slot_date >= today and a.status == "confirmed")
+        cancelled = sum(1 for a in appointments if a.status == "cancelled")
+        return render_template("my_appointments.html", appointments=appointments,
+                               upcoming=upcoming, cancelled=cancelled)
+
+    @app.route("/appointment/cancel/<int:apt_id>", methods=["POST"])
+    @login_required
+    @role_required("patient")
+    def cancel_appointment(apt_id):
+        patient = Patient.query.filter_by(user_id=session["user_id"]).first_or_404()
+        apt = Appointment.query.filter_by(id=apt_id, patient_id=patient.id).first_or_404()
+        if apt.status == "confirmed":
+            apt.status = "cancelled"
+            apt.slot.is_available = True
+            db.session.commit()
+            flash("Запис скасовано.")
+        return redirect(url_for("my_appointments"))
 
     @app.route("/doctor-dashboard")
     @login_required
@@ -196,6 +226,18 @@ def register_routes(app):
             "appointments": Appointment.query.count(),
         }
         return render_template("admin_panel.html", stats=stats)
+
+    @app.route("/pro-systemu")
+    def pro_systemu():
+        return render_template("pro_systemu.html")
+
+    @app.route("/medkarta")
+    @login_required
+    @role_required("patient")
+    def medkarta():
+        patient = Patient.query.filter_by(user_id=session["user_id"]).first_or_404()
+        appointments = Appointment.query.filter_by(patient_id=patient.id).order_by(Appointment.id.desc()).all()
+        return render_template("medkarta.html", patient=patient, appointments=appointments)
 
 
 app = create_app()

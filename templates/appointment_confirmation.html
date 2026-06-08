@@ -1,15 +1,189 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card p-4">
-  <div class="display-6 text-success">✓ Запис успішно підтверджено</div>
-  <hr>
-  <p><b>Пацієнт:</b> {{ appointment.patient.full_name }}</p>
-  <p><b>Лікар:</b> {{ appointment.doctor.full_name }}</p>
-  <p><b>Спеціальність:</b> {{ appointment.recommended_specialty }}</p>
-  <p><b>Дата і час:</b> {{ appointment.slot.slot_date }} {{ appointment.slot.slot_time }}</p>
-  <p><b>Кабінет:</b> {{ appointment.doctor.room }}</p>
-  <p><b>Статус:</b> {{ appointment.status }}</p>
-  <a class="btn btn-primary" href="{{ url_for('my_appointments') }}">Перейти до моїх записів</a>
-  <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">На головну</a>
+
+{% set sd = appointment.slot.slot_date %}
+{% set st = appointment.slot.slot_time %}
+{% set apt_num = 'АРТ-' ~ sd[:4] ~ '-' ~ sd[5:7] ~ sd[8:10] ~ '-' ~ st.replace(':','') %}
+{% set fmt_date = sd[8:10] ~ '.' ~ sd[5:7] ~ '.' ~ sd[:4] %}
+{% set is_female = appointment.doctor.full_name.split()[-1].endswith('на') or appointment.doctor.full_name.split()[-1].endswith('вна') %}
+{% set rating = (4.5 + (appointment.doctor.experience_years % 5) * 0.1)|round(1) %}
+
+<div class="booking-page">
+
+  <!-- ── LEFT SIDEBAR (all done) ── -->
+  <div class="bk-sidebar">
+    <div class="bk-sidebar-title">Кроки запису на прийом</div>
+
+    {% for step_n, step_label in [('1','Введення симптомів'),('2','Рекомендація спеціальності'),('3','Вибір лікаря'),('4','Підтвердження запису')] %}
+    <div class="bk-step {% if step_n == '4' %}active{% endif %}">
+      <div class="bk-step-icon" style="background:{% if step_n == '4' %}var(--blue){% else %}#16A34A{% endif %}">
+        <span class="bk-step-num" style="background:{% if step_n == '4' %}var(--blue-hover){% else %}#15803D{% endif %}">{{ step_n }}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="bk-step-label">{{ step_label }}</div>
+    </div>
+    {% endfor %}
+
+    <!-- Help card -->
+    <div class="bk-help-card">
+      <div style="display:flex;align-items:center;gap:7px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <h5>Потрібна допомога?</h5>
+      </div>
+      <p>Якщо у вас виникли питання, зверніться до нашої служби підтримки</p>
+      <a class="bk-help-btn" href="#">Зв'язатись з нами</a>
+    </div>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div>
+
+    <!-- Success banner -->
+    <div class="confirm-success-banner">
+      <div class="confirm-success-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div>
+        <div class="confirm-success-title">Запис успішно створено</div>
+        <div class="confirm-success-sub">Ваш запис до лікаря підтверджено. Деталі візиту наведено нижче.</div>
+      </div>
+      <div class="confirm-success-watermark">
+        <svg width="100" height="60" viewBox="0 0 100 60" fill="none">
+          <path d="M5 35c0-12 9.6-21 22-21a22 22 0 0 1 22 21c0 12-22 25-22 25S5 47 5 35z" fill="#BBF7D0"/>
+          <path d="M12 35h6l4-12 8 24 4-12h12" stroke="#16A34A" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Doctor + Details -->
+    <div class="confirm-body">
+
+      <!-- Doctor card -->
+      <div class="confirm-doc-card">
+        <div class="confirm-doc-photo">
+          {% if is_female %}
+          <svg viewBox="0 0 90 100" fill="none" width="80" height="88">
+            <circle cx="45" cy="32" r="20" fill="#FDDCB5"/>
+            <path d="M12 90 Q12 66 45 66 Q78 66 78 90" fill="#BFDBFE"/>
+            <ellipse cx="45" cy="17" rx="21" ry="11" fill="#92400E"/>
+            <path d="M24 28 Q25 48 45 50 Q65 48 66 28" fill="#FDDCB5"/>
+            <rect x="36" y="62" width="18" height="28" rx="5" fill="white"/>
+          </svg>
+          {% else %}
+          <svg viewBox="0 0 90 100" fill="none" width="80" height="88">
+            <circle cx="45" cy="32" r="20" fill="#FDDCB5"/>
+            <path d="M12 90 Q12 66 45 66 Q78 66 78 90" fill="#BFDBFE"/>
+            <path d="M25 26 Q25 10 45 10 Q65 10 65 26" fill="#374151"/>
+            <path d="M24 28 Q25 48 45 50 Q65 48 66 28" fill="#FDDCB5"/>
+            <rect x="36" y="62" width="18" height="28" rx="5" fill="white"/>
+            <path d="M38 66 L45 76 L52 66" stroke="#2563EB" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          {% endif %}
+        </div>
+
+        <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.3">{{ appointment.doctor.full_name }}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--blue)">{{ appointment.recommended_specialty }}</div>
+
+        <div style="width:100%;margin-top:8px;display:flex;flex-direction:column;gap:7px">
+          <div class="doc-stat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Стаж: <b>{{ appointment.doctor.experience_years }} років</b>
+          </div>
+          <div class="doc-stat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Рейтинг: <b>{{ rating }}</b>
+          </div>
+          <div class="doc-stat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Кабінет: <b>{{ appointment.doctor.room }}</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointment details -->
+      <div class="confirm-details-card">
+        <div class="section-title" style="margin-bottom:16px">Деталі запису</div>
+        <table class="confirm-table">
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+              Номер запису:
+            </div></td>
+            <td><span style="font-family:monospace;font-size:12px;color:var(--blue)">{{ apt_num }}</span></td>
+          </tr>
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              Лікар:
+            </div></td>
+            <td>{{ appointment.doctor.full_name }}</td>
+          </tr>
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Спеціальність:
+            </div></td>
+            <td>{{ appointment.recommended_specialty }}</td>
+          </tr>
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Дата:
+            </div></td>
+            <td>{{ fmt_date }}</td>
+          </tr>
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              Час:
+            </div></td>
+            <td>{{ st }}</td>
+          </tr>
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Кабінет:
+            </div></td>
+            <td>{{ appointment.doctor.room }}</td>
+          </tr>
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              Пацієнт:
+            </div></td>
+            <td>{{ appointment.patient.full_name }}</td>
+          </tr>
+          <tr>
+            <td><div class="confirm-table-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Статус:
+            </div></td>
+            <td><span class="badge badge-green" style="font-size:12px;padding:4px 12px">Підтверджено</span></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Next steps -->
+    <div class="confirm-next-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="#2563EB"/></svg>
+      <div>
+        <div style="font-weight:700;margin-bottom:6px">Подальші дії</div>
+        <ul>
+          <li>Прибудьте за 10–15 хвилин до початку прийому.</li>
+          <li>Візьміть документ, що посвідчує особу.</li>
+          <li>За потреби ви можете скасувати або перенести запис у розділі "Мої записи".</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div style="display:flex;justify-content:flex-end;gap:12px">
+      <a class="btn btn-ghost btn-lg" href="{{ url_for('index') }}">Повернутися на головну</a>
+      <a class="btn btn-primary btn-lg" href="{{ url_for('my_appointments') }}">Перейти до моїх записів</a>
+    </div>
+
+  </div>
 </div>
+
 {% endblock %}

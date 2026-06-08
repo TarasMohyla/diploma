@@ -1,21 +1,272 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row g-4">
-  <div class="col-lg-8">
-    <div class="card p-4">
-      <h2>Форма введення симптомів або попереднього діагнозу</h2>
-      <p class="text-muted">Оберіть симптоми або опишіть попередній діагноз. Рекомендація не є медичним діагнозом.</p>
-      <form method="post">
-        <label class="form-label">Симптоми</label><br>
-        {% for s in symptoms %}
-          <label class="symptom-chip"><input type="checkbox" name="symptoms" value="{{ s.id }}"> {{ s.name }}</label>
-        {% endfor %}
-        <label class="form-label mt-3">Попередній діагноз / опис скарг</label>
-        <textarea class="form-control mb-3" name="diagnosis" rows="4" placeholder="Наприклад: біль у грудях, задишка, підвищений тиск..."></textarea>
-        <button class="btn btn-primary">Отримати рекомендацію</button>
-      </form>
+
+{% set icons = {
+  'температура':     ('#EFF6FF','#2563EB','<path d="M12 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="4" fill="currentColor" stroke="none"/><path d="M9 9h6" stroke="currentColor" stroke-width="1.5"/>'),
+  'кашель':          ('#EFF6FF','#2563EB','<path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
+  'біль у горлі':    ('#EFF6FF','#2563EB','<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 12c0-1.66 1.34-3 3-3s3 1.34 3 3" stroke="currentColor" stroke-width="1.8" fill="none"/>'),
+  'слабкість':       ('#FFF7ED','#EA580C','<path d="M13 2L4.09 12.26A1 1 0 0 0 5 14h7l-1 8 8.91-10.26A1 1 0 0 0 19 10h-7l1-8z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>'),
+  'біль у грудях':   ('#FFF1F2','#E11D48','<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="1.8" fill="none"/>'),
+  'задишка':         ('#EFF6FF','#2563EB','<path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M2 14h4l2-4 4 8 2-4h4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+  'підвищений тиск': ('#EFF6FF','#2563EB','<path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+  'головний біль':   ('#F5F3FF','#7C3AED','<circle cx="12" cy="10" r="7" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M12 17v4M9 21h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
+  'запаморочення':   ('#F5F3FF','#7C3AED','<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>'),
+  'оніміння':        ('#FFF7ED','#EA580C','<path d="M18 11V6a2 2 0 0 0-4 0v0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M18 11a2 2 0 0 1 2 2v3a6 6 0 0 1-6 6h-2a8 8 0 0 1-8-8 2 2 0 1 1 4 0" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>'),
+  'висип':           ('#FFF1F2','#E11D48','<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1.5" fill="currentColor" stroke="none"/>'),
+  'свербіж':         ('#FFF1F2','#E11D48','<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M9 16h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
+  'біль у животі':   ('#F0FDF4','#16A34A','<ellipse cx="12" cy="12" rx="9" ry="7" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M8 12c1-2 2-3 4-3s3 1 4 3" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>'),
+  'печія':           ('#FFF7ED','#EA580C','<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" stroke="currentColor" stroke-width="1.8" fill="none"/>'),
+  'нудота':          ('#F0FDF4','#16A34A','<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>'),
+} %}
+
+<div class="symp-layout">
+
+  <!-- ── LEFT: FORM ── -->
+  <div class="symp-form-card">
+
+    <!-- Header with illustration -->
+    <div class="symp-header">
+      <div class="symp-title-blue">Введення симптомів або попереднього діагнозу</div>
+      <div class="symp-sub-text">Оберіть симптоми зі списку, опишіть свої скарги або введіть попередній діагноз.<br>Система допоможе визначити найбільш відповідного спеціаліста для вашого випадку.</div>
+    </div>
+
+    <!-- Corner illustration -->
+    <div class="symp-illustration-corner">
+      <svg width="140" height="100" viewBox="0 0 140 100" fill="none">
+        <!-- Leaves -->
+        <ellipse cx="120" cy="20" rx="14" ry="22" fill="#BFDBFE" opacity=".4" transform="rotate(20 120 20)"/>
+        <ellipse cx="130" cy="55" rx="10" ry="18" fill="#BFDBFE" opacity=".3" transform="rotate(-15 130 55)"/>
+        <!-- Plus -->
+        <text x="8" y="22" font-size="16" fill="#BFDBFE" font-family="sans-serif">+</text>
+        <text x="22" y="10" font-size="12" fill="#BFDBFE" font-family="sans-serif">+</text>
+        <!-- Clipboard -->
+        <rect x="40" y="10" width="56" height="76" rx="8" fill="white" stroke="#E2E8F0" stroke-width="1.2"/>
+        <rect x="55" y="5" width="26" height="12" rx="6" fill="#CBD5E1"/>
+        <!-- Shield -->
+        <path d="M68 28c-8 0-13 3.5-13 3.5v10c0 7 13 12 13 12s13-5 13-12v-10S76 28 68 28z" fill="#BFDBFE"/>
+        <rect x="66" y="33" width="4" height="12" rx="2" fill="#2563EB"/>
+        <rect x="62" y="37" width="12" height="4" rx="2" fill="#2563EB"/>
+        <!-- Checkmarks -->
+        <rect x="48" y="56" width="40" height="8" rx="3" fill="#F1F5F9"/>
+        <circle cx="55" cy="60" r="4" fill="#BFDBFE"/>
+        <path d="M53 60l1.5 1.5 3-3" stroke="#2563EB" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="48" y="68" width="40" height="8" rx="3" fill="#F1F5F9"/>
+        <circle cx="55" cy="72" r="4" fill="#BFDBFE"/>
+        <path d="M53 72l1.5 1.5 3-3" stroke="#2563EB" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Doctor figure -->
+        <circle cx="112" cy="42" r="12" fill="#FDE8C8"/>
+        <path d="M100 38 Q100 28 112 28 Q124 28 124 38" fill="#374151"/>
+        <rect x="105" y="54" width="14" height="28" rx="5" fill="#EFF6FF"/>
+        <path d="M107 57 L112 64 L117 57" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <form method="post" id="sympForm">
+
+      <!-- Symptom search -->
+      <div class="form-group">
+        <label class="form-label">Пошук симптомів</label>
+        <div class="symp-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="sympSearch" placeholder="Введіть симптом або оберіть зі списку"
+                 oninput="filterChips(this.value)">
+        </div>
+
+        <!-- Chips grid -->
+        <div class="symp-chips-grid" id="chipsGrid">
+          {% for s in symptoms %}
+            {% set bg    = icons.get(s.name, ('#EFF6FF','#2563EB',''))[0] %}
+            {% set color = icons.get(s.name, ('#EFF6FF','#2563EB',''))[1] %}
+            {% set path  = icons.get(s.name, ('#EFF6FF','#2563EB',''))[2] %}
+            <label class="symp-v2-chip" id="chip-{{ s.id }}" onclick="toggleChip(this, {{ s.id }}, '{{ s.name|capitalize }}')">
+              <div class="symp-v2-icon" style="background:{{ bg }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{ color }}" stroke-width="1.8">{{ path }}</svg>
+              </div>
+              <span class="symp-v2-name">{{ s.name|capitalize }}</span>
+              <input class="symp-v2-cb" type="checkbox" name="symptoms" value="{{ s.id }}"
+                     onchange="syncChip(this)" onclick="event.stopPropagation()">
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Complaints textarea -->
+      <div class="form-group">
+        <label class="form-label">Опис скарг</label>
+        <textarea class="form-control" name="symptoms_description" id="sympDesc" rows="4"
+          placeholder="Протягом двох днів підвищена температура до 38.5°С, головний біль, слабкість, запаморочення. Інколи нудота, немає апетиту."
+          maxlength="1000"></textarea>
+      </div>
+
+      <!-- Previous diagnosis -->
+      <div class="form-group">
+        <label class="form-label">Попередній діагноз (за наявності)</label>
+        <input class="form-control" type="text" name="diagnosis"
+          placeholder="Наприклад: ГРВІ, мігрень, гастрит тощо">
+      </div>
+
+      <!-- Desired date -->
+      <div class="form-group">
+        <label class="form-label">Бажана дата прийому</label>
+        <div class="date-input-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <input type="date" name="desired_date" value="{{ today }}">
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button class="btn btn-primary btn-lg" type="submit">
+          Отримати рекомендацію &nbsp;→
+        </button>
+        <button class="btn btn-ghost btn-lg" type="reset" onclick="resetAll()">
+          Очистити форму
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="symp-right-panel">
+
+    <!-- Tips -->
+    <div class="card card-p">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <div class="section-title" style="margin:0">Підказка для пацієнта</div>
+      </div>
+      <ul class="tip-list">
+        <li><span class="tip-dot"></span>Оберіть якомога більше симптомів, що вас турбують.</li>
+        <li><span class="tip-dot"></span>Описуйте скарги максимально точно та коротко.</li>
+        <li><span class="tip-dot"></span>Рекомендація системи не є діагнозом. Остаточне рішення приймає лікар.</li>
+        <li><span class="tip-dot"></span>У невідкладних випадках зверніться до екстреної допомоги.</li>
+      </ul>
+    </div>
+
+    <!-- Selected symptoms -->
+    <div class="card card-p">
+      <div class="section-title">Обрані симптоми (<span id="selCount">0</span>)</div>
+      <div class="selected-tags-box" id="selectedTags">
+        <span style="font-size:12px;color:#94A3B8" id="noSelMsg">Симптоми не обрані</span>
+      </div>
+    </div>
+
+    <!-- Booking steps -->
+    <div class="card card-p">
+      <div class="section-title">Кроки запису</div>
+
+      <div class="booking-step">
+        <div class="bs-icon active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
+        </div>
+        <div>
+          <div class="bs-title active">1. Введення симптомів</div>
+          <div class="bs-desc">Опишіть свої симптоми або діагноз</div>
+        </div>
+      </div>
+
+      <div class="booking-step">
+        <div class="bs-icon inactive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="bs-title inactive">2. Отримання рекомендації</div>
+          <div class="bs-desc">Система підбере спеціаліста</div>
+        </div>
+      </div>
+
+      <div class="booking-step">
+        <div class="bs-icon inactive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div>
+          <div class="bs-title inactive">3. Вибір лікаря</div>
+          <div class="bs-desc">Оберіть лікаря та час прийому</div>
+        </div>
+      </div>
+
+      <div class="booking-step">
+        <div class="bs-icon inactive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+        </div>
+        <div>
+          <div class="bs-title inactive">4. Підтвердження запису</div>
+          <div class="bs-desc">Підтвердьте запис на прийом</div>
+        </div>
+      </div>
+
     </div>
   </div>
-  <div class="col-lg-4"><div class="card p-4"><h5>Підказка</h5><p>Обирайте найбільш релевантні симптоми. У невідкладних випадках звертайтеся по екстрену допомогу.</p></div></div>
+
 </div>
+
+<script>
+const selected = {}; // {id: name}
+
+function toggleChip(label, id, name) {
+  const cb = label.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+  syncChip(cb, id, name);
+}
+
+function syncChip(cb, id, name) {
+  const label = cb.closest('.symp-v2-chip');
+  id = id || cb.value;
+  name = name || label.querySelector('.symp-v2-name').textContent;
+  if (cb.checked) {
+    label.classList.add('sel');
+    selected[id] = name;
+  } else {
+    label.classList.remove('sel');
+    delete selected[id];
+  }
+  renderTags();
+}
+
+function renderTags() {
+  const box = document.getElementById('selectedTags');
+  const noMsg = document.getElementById('noSelMsg');
+  const count = Object.keys(selected).length;
+  document.getElementById('selCount').textContent = count;
+
+  const tags = box.querySelectorAll('.sel-tag');
+  tags.forEach(t => t.remove());
+
+  if (count === 0) {
+    noMsg.style.display = '';
+  } else {
+    noMsg.style.display = 'none';
+    for (const [id, name] of Object.entries(selected)) {
+      const tag = document.createElement('span');
+      tag.className = 'sel-tag';
+      tag.innerHTML = name + '<span class="sel-tag-x" onclick="removeTag(' + id + ')">×</span>';
+      box.appendChild(tag);
+    }
+  }
+}
+
+function removeTag(id) {
+  const cb = document.querySelector('input[name="symptoms"][value="' + id + '"]');
+  if (cb) { cb.checked = false; syncChip(cb, id); }
+}
+
+function filterChips(val) {
+  const q = val.toLowerCase();
+  document.querySelectorAll('.symp-v2-chip').forEach(chip => {
+    const nm = chip.querySelector('.symp-v2-name').textContent.toLowerCase();
+    chip.classList.toggle('hidden', q && !nm.includes(q));
+  });
+}
+
+function resetAll() {
+  for (const id of Object.keys(selected)) delete selected[id];
+  document.querySelectorAll('.symp-v2-chip').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.symp-v2-cb').forEach(cb => cb.checked = false);
+  document.getElementById('sympSearch').value = '';
+  document.querySelectorAll('.symp-v2-chip').forEach(c => c.classList.remove('hidden'));
+  renderTags();
+}
+</script>
+
 {% endblock %}

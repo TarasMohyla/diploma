@@ -1,21 +1,316 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="hero p-5">
-  <div class="row align-items-center">
-    <div class="col-lg-7">
-      <h1 class="display-5 fw-bold">Онлайн-запис до лікаря на основі попереднього діагнозу</h1>
-      <p class="lead">Система допомагає пацієнту ввести симптоми, отримати рекомендовану спеціальність, обрати лікаря та підтвердити запис на доступний час.</p>
-      <a class="btn btn-primary btn-lg" href="{{ url_for('symptoms') if current_user else url_for('login') }}">Розпочати запис</a>
-    </div>
-    <div class="col-lg-5">
-      <div class="card p-4">
-        <h5>Як це працює</h5>
-        <div class="step">1. Введення симптомів</div>
-        <div class="step">2. Отримання рекомендації</div>
-        <div class="step">3. Вибір лікаря та часу</div>
-        <div class="step">4. Підтвердження запису</div>
-      </div>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <!-- Decorative plus signs -->
+  <span class="hero-plus" style="top:18px;left:52%">+</span>
+  <span class="hero-plus" style="top:44px;left:58%">+</span>
+  <span class="hero-plus" style="bottom:24px;left:54%">+</span>
+
+  <!-- Left text -->
+  <div style="position:relative;z-index:1">
+    <h1>Онлайн-запис до лікаря<br>швидко та зручно</h1>
+    <p class="hero-sub">Наша система допоможе вам обрати спеціальність на основі симптомів або попереднього діагнозу, підібрати лікаря та зручний час прийому.</p>
+    <div class="hero-btns">
+      <a class="btn btn-white btn-lg" href="{{ url_for('symptoms') if current_user else url_for('login') }}">
+        Розпочати запис &nbsp;→
+      </a>
+      <a class="btn btn-lg" href="{{ url_for('doctors') if current_user else url_for('login') }}"
+         style="background:rgba(255,255,255,.15);color:white;border:1.5px solid rgba(255,255,255,.5)">
+        Переглянути лікарів
+      </a>
     </div>
   </div>
+
+  <!-- Right illustration -->
+  <div class="hero-right">
+    <svg viewBox="0 0 420 280" fill="none" xmlns="http://www.w3.org/2000/svg" width="420" height="280">
+
+      <!-- Leaves background decoration -->
+      <ellipse cx="60" cy="100" rx="32" ry="50" fill="rgba(147,197,253,.3)" transform="rotate(-30 60 100)"/>
+      <ellipse cx="380" cy="60" rx="28" ry="44" fill="rgba(147,197,253,.25)" transform="rotate(25 380 60)"/>
+      <ellipse cx="400" cy="220" rx="22" ry="36" fill="rgba(147,197,253,.2)" transform="rotate(-15 400 220)"/>
+
+      <!-- Main clipboard card -->
+      <rect x="120" y="30" width="170" height="210" rx="14" fill="white" stroke="#E2E8F0" stroke-width="1.5"/>
+      <!-- Clipboard clip -->
+      <rect x="170" y="20" width="70" height="22" rx="11" fill="#CBD5E1"/>
+      <rect x="178" y="24" width="54" height="14" rx="7" fill="#94A3B8"/>
+
+      <!-- Shield with cross -->
+      <path d="M205 68c-14 0-24 6-24 6v18c0 12 24 22 24 22s24-10 24-22V74s-10-6-24-6z" fill="#BFDBFE"/>
+      <rect x="202" y="78" width="6" height="20" rx="3" fill="#2563EB"/>
+      <rect x="196" y="84" width="18" height="6" rx="3" fill="#2563EB"/>
+
+      <!-- Checkmark items -->
+      <rect x="140" y="122" width="130" height="14" rx="4" fill="#F1F5F9"/>
+      <circle cx="152" cy="129" r="6" fill="#BFDBFE"/>
+      <path d="M149 129l2 2 4-4" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="164" y="125" width="70" height="4" rx="2" fill="#CBD5E1"/>
+      <rect x="164" y="131" width="50" height="3" rx="1.5" fill="#E2E8F0"/>
+
+      <rect x="140" y="142" width="130" height="14" rx="4" fill="#F1F5F9"/>
+      <circle cx="152" cy="149" r="6" fill="#BFDBFE"/>
+      <path d="M149 149l2 2 4-4" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="164" y="145" width="80" height="4" rx="2" fill="#CBD5E1"/>
+      <rect x="164" y="151" width="55" height="3" rx="1.5" fill="#E2E8F0"/>
+
+      <rect x="140" y="162" width="130" height="14" rx="4" fill="#F1F5F9"/>
+      <circle cx="152" cy="169" r="6" fill="#BFDBFE"/>
+      <path d="M149 169l2 2 4-4" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="164" y="165" width="60" height="4" rx="2" fill="#CBD5E1"/>
+      <rect x="164" y="171" width="75" height="3" rx="1.5" fill="#E2E8F0"/>
+
+      <!-- Doctor figure (right side) -->
+      <!-- Body/coat -->
+      <rect x="280" y="130" width="70" height="90" rx="10" fill="#EFF6FF"/>
+      <!-- Collar V -->
+      <path d="M295 138 L315 162 L335 138" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Head -->
+      <circle cx="315" cy="108" r="24" fill="#FDE8C8"/>
+      <!-- Hair -->
+      <path d="M291 102 Q291 80 315 80 Q339 80 339 102" fill="#1E3A5F"/>
+      <!-- Ears -->
+      <ellipse cx="291" cy="108" rx="5" ry="7" fill="#FDDCB5"/>
+      <ellipse cx="339" cy="108" rx="5" ry="7" fill="#FDDCB5"/>
+      <!-- Stethoscope -->
+      <path d="M300 145 Q288 165 292 180 Q296 194 306 194" stroke="#374151" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="306" cy="196" r="6" fill="#374151"/>
+      <!-- Tie / shirt -->
+      <rect x="311" y="140" width="8" height="30" rx="4" fill="#2563EB"/>
+
+      <!-- Calendar (top right) -->
+      <rect x="340" y="40" width="56" height="52" rx="8" fill="white" stroke="#E2E8F0" stroke-width="1.5"/>
+      <rect x="340" y="40" width="56" height="16" rx="8" fill="#2563EB"/>
+      <rect x="340" y="48" width="56" height="8" fill="#2563EB"/>
+      <line x1="356" y1="36" x2="356" y2="48" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="380" y1="36" x2="380" y2="48" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Calendar dots -->
+      <circle cx="353" cy="66" r="3" fill="#BFDBFE"/><circle cx="368" cy="66" r="3" fill="#BFDBFE"/><circle cx="383" cy="66" r="3" fill="#BFDBFE"/>
+      <circle cx="353" cy="78" r="3" fill="#2563EB"/><circle cx="368" cy="78" r="3" fill="#BFDBFE"/><circle cx="383" cy="78" r="3" fill="#BFDBFE"/>
+
+      <!-- Clock -->
+      <circle cx="56" cy="200" r="28" fill="white" stroke="#E2E8F0" stroke-width="1.5"/>
+      <circle cx="56" cy="200" r="24" fill="#EFF6FF"/>
+      <circle cx="56" cy="200" r="3" fill="#2563EB"/>
+      <line x1="56" y1="200" x2="56" y2="182" stroke="#1E40AF" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="56" y1="200" x2="68" y2="208" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>
+      <!-- Clock ticks -->
+      <line x1="56" y1="178" x2="56" y2="182" stroke="#94A3B8" stroke-width="1.5"/>
+      <line x1="56" y1="218" x2="56" y2="222" stroke="#94A3B8" stroke-width="1.5"/>
+      <line x1="32" y1="200" x2="36" y2="200" stroke="#94A3B8" stroke-width="1.5"/>
+      <line x1="76" y1="200" x2="80" y2="200" stroke="#94A3B8" stroke-width="1.5"/>
+
+      <!-- Plus cross decoration -->
+      <text x="94" y="58" font-size="22" fill="rgba(147,197,253,.7)" font-family="sans-serif">+</text>
+      <text x="370" y="120" font-size="20" fill="rgba(147,197,253,.6)" font-family="sans-serif">+</text>
+    </svg>
+  </div>
 </section>
+
+<!-- ── 3 FEATURE CARDS ── -->
+<div class="feature-row">
+  <div class="feature-item">
+    <div class="feature-icon-box">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 0-7.78z"/>
+        <path d="M7 12h2l1.5-4 3 8 1.5-4H17" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <h4>Попередня діагностика</h4>
+      <p>Введіть симптоми або скарги, і система підбере для вас рекомендовану спеціальність.</p>
+    </div>
+  </div>
+
+  <div class="feature-item">
+    <div class="feature-icon-box">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke-linecap="round"/>
+        <path d="M19 8c1.7 0 3 1.3 3 3v1" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <h4>Вибір лікаря</h4>
+      <p>Оберіть потрібного спеціаліста та переглянете його профіль, досвід і відгуки пацієнтів.</p>
+    </div>
+  </div>
+
+  <div class="feature-item">
+    <div class="feature-icon-box">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        <circle cx="8" cy="15" r="1.5" fill="#2563EB"/><circle cx="12" cy="15" r="1.5" fill="#2563EB"/><circle cx="16" cy="15" r="1.5" fill="#2563EB"/>
+      </svg>
+    </div>
+    <div>
+      <h4>Зручний розклад</h4>
+      <p>Оберіть доступну дату та час прийому, що зручно саме для вас.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SPECIALTIES + ADVANTAGES ── -->
+<div class="two-col-section">
+
+  <!-- Specialties -->
+  <div class="spec-card">
+    <h3>Доступні спеціальності</h3>
+    <div class="spec-icons-row">
+
+      <!-- Терапевт: стетоскоп -->
+      <a class="spec-icon-item" href="{{ url_for('doctors') if current_user else url_for('login') }}">
+        <div class="spec-circle">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="8" r="3" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+            <path d="M10 8 Q6 8 6 14 Q6 22 13 22" stroke="#2563EB" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M22 8 Q26 8 26 14 Q26 22 19 22" stroke="#2563EB" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <circle cx="16" cy="25" r="3.5" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+            <circle cx="16" cy="25" r="1.2" fill="#2563EB"/>
+          </svg>
+        </div>
+        <span>Терапевт</span>
+      </a>
+
+      <!-- Кардіолог: серце + пульс -->
+      <a class="spec-icon-item" href="{{ url_for('doctors') if current_user else url_for('login') }}">
+        <div class="spec-circle">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M16 27S4 19 4 11.5A7 7 0 0 1 16 7.2 7 7 0 0 1 28 11.5C28 19 16 27 16 27z" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+            <path d="M8 16h3l2-5 4 10 2-5h5" stroke="#2563EB" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span>Кардіолог</span>
+      </a>
+
+      <!-- Невролог: мозок -->
+      <a class="spec-icon-item" href="{{ url_for('doctors') if current_user else url_for('login') }}">
+        <div class="spec-circle">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M16 6 C10 6 6 10 6 15 C6 18 7.5 20.5 10 22 L10 26 L22 26 L22 22 C24.5 20.5 26 18 26 15 C26 10 22 6 16 6z" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+            <path d="M12 14 Q14 11 16 14 Q18 11 20 14" stroke="#2563EB" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <line x1="16" y1="6" x2="16" y2="26" stroke="#2563EB" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/>
+          </svg>
+        </div>
+        <span>Невролог</span>
+      </a>
+
+      <!-- Дерматолог: рука/шкіра -->
+      <a class="spec-icon-item" href="{{ url_for('doctors') if current_user else url_for('login') }}">
+        <div class="spec-circle">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M11 28 L11 14 Q11 12 13 12 Q15 12 15 14 L15 18 Q15 16 17 16 Q19 16 19 18 L19 20 Q19 18 21 18 Q23 18 23 20 L23 24 Q23 28 19 28z" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5" stroke-linejoin="round"/>
+            <circle cx="13" cy="8" r="3" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <span>Дерматолог</span>
+      </a>
+
+      <!-- Педіатр: дитина -->
+      <a class="spec-icon-item" href="{{ url_for('doctors') if current_user else url_for('login') }}">
+        <div class="spec-circle">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="9" r="4.5" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+            <path d="M8 28 C8 22 11 19 16 19 C21 19 24 22 24 28" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 7 C21.5 7.5 22.5 9 22.5 10.5" stroke="#2563EB" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M12 7 C10.5 7.5 9.5 9 9.5 10.5" stroke="#2563EB" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>Педіатр</span>
+      </a>
+
+      <!-- Офтальмолог: очей -->
+      <a class="spec-icon-item" href="{{ url_for('doctors') if current_user else url_for('login') }}">
+        <div class="spec-circle">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M4 16 C7 10 11 7 16 7 C21 7 25 10 28 16 C25 22 21 25 16 25 C11 25 7 22 4 16z" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+            <circle cx="16" cy="16" r="5" fill="white" stroke="#2563EB" stroke-width="1.5"/>
+            <circle cx="16" cy="16" r="2.5" fill="#2563EB"/>
+            <circle cx="17.2" cy="14.8" r="1" fill="white"/>
+          </svg>
+        </div>
+        <span>Офтальмолог</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Advantages -->
+  <div class="adv-card">
+    <h3>Переваги системи</h3>
+    <ul class="adv-list">
+      {% for item in ['онлайн-доступ 24/7', 'зменшення часу очікування', 'зручний вибір лікаря', 'безпечне зберігання даних'] %}
+      <li>
+        <div class="adv-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        {{ item }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<div class="how-section">
+  <h3>Як це працює</h3>
+  <div class="how-steps">
+
+    <div class="how-step">
+      <div class="how-step-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8">
+          <rect x="8" y="2" width="8" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/>
+          <line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/>
+        </svg>
+      </div>
+      <h5>1. Введення<br>симптомів</h5>
+    </div>
+
+    <div class="how-arrow">
+      <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M2 8h22M18 2l6 6-6 6" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <div class="how-step">
+      <div class="how-step-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8">
+          <rect x="4" y="4" width="16" height="18" rx="2"/>
+          <line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/>
+        </svg>
+      </div>
+      <h5>2. Отримання<br>рекомендації</h5>
+    </div>
+
+    <div class="how-arrow">
+      <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M2 8h22M18 2l6 6-6 6" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <div class="how-step">
+      <div class="how-step-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h5>3. Вибір<br>лікаря</h5>
+    </div>
+
+    <div class="how-arrow">
+      <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M2 8h22M18 2l6 6-6 6" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <div class="how-step">
+      <div class="how-step-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          <polyline points="9 16 11 18 15 14"/>
+        </svg>
+      </div>
+      <h5>4. Підтвердження<br>запису</h5>
+    </div>
+
+  </div>
+</div>
+
 {% endblock %}

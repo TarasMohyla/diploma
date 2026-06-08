@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:760px">
+  <h1 style="font-size:26px;font-weight:800;margin-bottom:8px">Про систему MedOnline</h1>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.7">Медична інформаційна система для онлайн-запису до лікаря на основі попереднього діагнозу.</p>
+
+  <div class="card card-p" style="margin-bottom:16px">
+    <div class="section-title">Мета системи</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7">
+      MedOnline — інформаційна система, що допомагає пацієнтам обрати відповідну медичну спеціальність на основі введених симптомів або попереднього діагнозу, та записатися до лікаря в зручний час.
+    </p>
+  </div>
+
+  <div class="card card-p" style="margin-bottom:16px">
+    <div class="section-title">Функціональні можливості</div>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:4px">
+      {% for item in ['Введення симптомів та попереднього діагнозу', 'Автоматична рекомендація медичної спеціальності', 'Перегляд профілів лікарів', 'Запис на прийом до обраного лікаря', 'Перегляд розкладу доступних слотів', 'Історія записів пацієнта'] %}
+      <li style="display:flex;gap:10px;font-size:13px;color:var(--text)">
+        <div style="width:20px;height:20px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        {{ item }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card card-p">
+    <div class="section-title">Застереження</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7">
+      Рекомендації системи мають виключно інформаційний характер і не є медичним діагнозом. Для отримання кваліфікованої медичної допомоги звертайтеся до лікаря.
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,17 +1,279 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card p-4">
-  <h2>{{ doctor.full_name }}</h2>
-  <p>Спеціальність: <b>{{ doctor.specialty.name }}</b> · {{ doctor.room }}</p>
-  <h4>Доступний час прийому</h4>
-  {% if slots %}
-  <form method="post" action="{{ url_for('create_appointment', slot_id=slots[0].id) }}" id="bookingForm">
-    <div class="row">
-    {% for s in slots %}
-      <div class="col-md-3 mb-2"><button type="submit" formaction="{{ url_for('create_appointment', slot_id=s.id) }}" class="btn btn-outline-primary w-100">{{ s.slot_date }}<br>{{ s.slot_time }}</button></div>
-    {% endfor %}
+
+{% set is_female = doctor.full_name.split()[-1].endswith('на') or doctor.full_name.split()[-1].endswith('вна') %}
+{% set rating = (4.5 + (doctor.experience_years % 5) * 0.1)|round(1) %}
+
+<div class="dd-outer">
+
+  <!-- BANNER -->
+  <div class="dd-banner">
+    <div class="dd-banner-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 0-7.78z" fill="white" stroke="white" stroke-width="1"/>
+        <path d="M7 12h2l1.5-4 3 8 1.5-4H17" stroke="#1D4ED8" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
-  </form>
-  {% else %}<p>Немає доступних слотів.</p>{% endif %}
-</div>
+    <div>
+      <div class="dd-banner-title">Обраний лікар: <span>{{ doctor.full_name }}</span></div>
+      <div class="dd-banner-spec">Спеціальність: <span>{{ doctor.specialty.name }}</span></div>
+      <div class="dd-banner-sub">Оберіть зручну для вас дату та час прийому.</div>
+    </div>
+    <div class="dd-banner-wm">
+      <svg width="140" height="60" viewBox="0 0 140 60" fill="none">
+        <path d="M0 30h16l10-22 18 44 10-22h86" stroke="rgba(255,255,255,0.18)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M50 42 Q65 20 80 42" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- MAIN CARD -->
+  <div class="dd-card">
+
+    <!-- 3-COLUMN BODY -->
+    <div class="dd-body">
+
+      <!-- LEFT: Doctor profile -->
+      <div class="dd-profile">
+        <div class="dd-fav">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="dd-photo">
+          {% if is_female %}
+          <svg viewBox="0 0 90 100" fill="none" width="78" height="86">
+            <circle cx="45" cy="32" r="20" fill="#FDDCB5"/>
+            <path d="M12 90 Q12 66 45 66 Q78 66 78 90" fill="#BFDBFE"/>
+            <ellipse cx="45" cy="17" rx="21" ry="11" fill="#92400E"/>
+            <path d="M24 28 Q25 48 45 50 Q65 48 66 28" fill="#FDDCB5"/>
+            <rect x="36" y="62" width="18" height="28" rx="5" fill="white"/>
+          </svg>
+          {% else %}
+          <svg viewBox="0 0 90 100" fill="none" width="78" height="86">
+            <circle cx="45" cy="32" r="20" fill="#FDDCB5"/>
+            <path d="M12 90 Q12 66 45 66 Q78 66 78 90" fill="#BFDBFE"/>
+            <path d="M25 26 Q25 10 45 10 Q65 10 65 26" fill="#374151"/>
+            <path d="M24 28 Q25 48 45 50 Q65 48 66 28" fill="#FDDCB5"/>
+            <rect x="36" y="62" width="18" height="28" rx="5" fill="white"/>
+            <path d="M38 66 L45 76 L52 66" stroke="#2563EB" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          {% endif %}
+        </div>
+        <div class="dd-name">{{ doctor.full_name }}</div>
+        <div class="dd-spec-label">{{ doctor.specialty.name }}</div>
+        <div class="dd-stats">
+          <div class="doc-stat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Стаж: <b>{{ doctor.experience_years }} років</b>
+          </div>
+          <div class="doc-stat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Рейтинг: <b>{{ rating }}</b>
+          </div>
+          <div class="doc-stat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Кабінет: <b>{{ doctor.room }}</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: Calendar -->
+      <div class="dd-cal-section">
+        <div class="dd-section-title">Оберіть дату прийому</div>
+        <div class="dd-cal-card">
+          <div class="dd-cal-header">
+            <button class="dd-cal-nav" onclick="changeMonth(-1)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="dd-cal-month" id="calMonthLabel"></span>
+            <button class="dd-cal-nav" onclick="changeMonth(1)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <div class="dd-cal-dow">
+            <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div>
+            <div style="color:#E11D48">Сб</div><div style="color:#E11D48">Нд</div>
+          </div>
+          <div class="dd-cal-grid" id="calGrid"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Time slots -->
+      <div class="dd-times-section">
+        <div class="dd-section-title">Доступний час</div>
+        <div class="dd-time-grid" id="timeGrid">
+          <div class="dd-no-times">Оберіть дату</div>
+        </div>
+      </div>
+
+    </div><!-- /dd-body -->
+
+    <!-- DIVIDER -->
+    <div class="divider" style="margin:0 0 18px"></div>
+
+    <!-- DETAILS SUMMARY -->
+    <div class="dd-summary-title">Деталі запису</div>
+    <div class="dd-summary-grid">
+      <div class="dd-sum-item">
+        <div class="dd-sum-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Лікар:
+        </div>
+        <div class="dd-sum-val">{{ doctor.full_name }}</div>
+      </div>
+      <div class="dd-sum-item">
+        <div class="dd-sum-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Спеціальність:
+        </div>
+        <div class="dd-sum-val">{{ doctor.specialty.name }}</div>
+      </div>
+      <div class="dd-sum-item">
+        <div class="dd-sum-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Дата:
+        </div>
+        <div class="dd-sum-val" id="sumDate">—</div>
+      </div>
+      <div class="dd-sum-item">
+        <div class="dd-sum-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Час:
+        </div>
+        <div class="dd-sum-val" id="sumTime">—</div>
+      </div>
+      <div class="dd-sum-item">
+        <div class="dd-sum-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Кабінет:
+        </div>
+        <div class="dd-sum-val">{{ doctor.room }}</div>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="dd-actions">
+      <a class="btn btn-ghost btn-lg" href="{{ url_for('doctors') }}">Назад</a>
+      <form id="bookingForm" method="post" action="#" style="display:inline;margin:0">
+        <button type="submit" id="confirmBtn" class="btn btn-primary btn-lg" disabled>
+          Підтвердити запис
+        </button>
+      </form>
+    </div>
+
+  </div><!-- /dd-card -->
+</div><!-- /dd-outer -->
+
+<script>
+const slotsData = [
+  {% for s in slots %}{"id":{{ s.id }},"date":"{{ s.slot_date }}","time":"{{ s.slot_time }}"}{% if not loop.last %},{% endif %}{% endfor %}
+];
+
+const MONTHS = ['Січень','Лютий','Березень','Квітень','Травень','Червень',
+                'Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
+
+const byDate = {};
+slotsData.forEach(s => {
+  if (!byDate[s.date]) byDate[s.date] = [];
+  byDate[s.date].push(s);
+});
+const availDates = Object.keys(byDate).sort();
+
+let curYear, curMonth, selDate = null, selSlotId = null;
+
+if (availDates.length) {
+  const d = new Date(availDates[0] + 'T00:00:00');
+  curYear = d.getFullYear();
+  curMonth = d.getMonth();
+  selDate = availDates[0];
+} else {
+  const n = new Date();
+  curYear = n.getFullYear();
+  curMonth = n.getMonth();
+}
+
+function buildCalendar() {
+  document.getElementById('calMonthLabel').textContent = MONTHS[curMonth] + ' ' + curYear;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  // Day-of-week offset: Mon=0
+  let startDow = new Date(curYear, curMonth, 1).getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+
+  const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+
+  for (let i = 0; i < startDow; i++) {
+    const blank = document.createElement('div');
+    blank.className = 'dd-cal-day';
+    grid.appendChild(blank);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = curYear + '-'
+      + String(curMonth + 1).padStart(2, '0') + '-'
+      + String(d).padStart(2, '0');
+    const cell = document.createElement('div');
+    const isAvail = !!byDate[dateStr];
+    const isSel   = dateStr === selDate;
+    cell.className = 'dd-cal-day'
+      + (isAvail ? ' avail' : '')
+      + (isSel   ? ' sel'   : '');
+    cell.textContent = d;
+
+    const dow = new Date(dateStr + 'T00:00:00').getDay();
+    if (!isAvail && (dow === 0 || dow === 6)) cell.style.color = '#FDA4AF';
+
+    if (isAvail) cell.onclick = () => selectDate(dateStr);
+    grid.appendChild(cell);
+  }
+}
+
+function selectDate(date) {
+  selDate = date;
+  selSlotId = null;
+  document.getElementById('sumDate').textContent = '—';
+  document.getElementById('sumTime').textContent = '—';
+  document.getElementById('confirmBtn').disabled = true;
+  buildCalendar();
+  showTimes();
+}
+
+function showTimes() {
+  const grid = document.getElementById('timeGrid');
+  grid.innerHTML = '';
+  if (!selDate || !byDate[selDate]) {
+    grid.innerHTML = '<div class="dd-no-times">Оберіть дату</div>';
+    return;
+  }
+  byDate[selDate].forEach(slot => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'dd-time-btn' + (slot.id === selSlotId ? ' sel' : '');
+    btn.textContent = slot.time;
+    btn.onclick = () => selectSlot(slot.id, slot.time);
+    grid.appendChild(btn);
+  });
+}
+
+function selectSlot(id, time) {
+  selSlotId = id;
+  const parts = selDate.split('-');
+  document.getElementById('sumDate').textContent = parts[2] + '.' + parts[1] + '.' + parts[0];
+  document.getElementById('sumTime').textContent = time;
+  document.getElementById('bookingForm').action = '/appointment/create/' + id;
+  document.getElementById('confirmBtn').disabled = false;
+  showTimes();
+}
+
+function changeMonth(delta) {
+  curMonth += delta;
+  if (curMonth < 0)  { curMonth = 11; curYear--; }
+  if (curMonth > 11) { curMonth = 0;  curYear++; }
+  buildCalendar();
+}
+
+buildCalendar();
+showTimes();
+</script>
+
 {% endblock %}

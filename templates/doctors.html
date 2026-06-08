@@ -1,15 +1,220 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Сторінка вибору лікаря</h2>
-{% if specialty %}<div class="alert alert-primary">Рекомендована спеціальність: <b>{{ specialty.name }}</b></div>{% endif %}
-<div class="row">
-{% for d in doctors %}
-  <div class="col-md-4 mb-3"><div class="card p-3 h-100">
-    <h5>{{ d.full_name }}</h5>
-    <p><b>{{ d.specialty.name }}</b> · {{ d.room }} · стаж {{ d.experience_years }} років</p>
-    <p class="small text-muted">{{ d.description }}</p>
-    <a class="btn btn-primary" href="{{ url_for('doctor_detail', doctor_id=d.id) }}">Обрати</a>
-  </div></div>
-{% else %}<p>Лікарів не знайдено.</p>{% endfor %}
+
+<div class="booking-page">
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <div class="bk-sidebar">
+    <div class="bk-sidebar-title">Кроки запису на прийом</div>
+
+    <div class="bk-step">
+      <div class="bk-step-icon">
+        <span class="bk-step-num">1</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
+      </div>
+      <div class="bk-step-label">Введення симптомів</div>
+    </div>
+
+    <div class="bk-step">
+      <div class="bk-step-icon">
+        <span class="bk-step-num">2</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="bk-step-label">Рекомендація спеціальності</div>
+    </div>
+
+    <div class="bk-step active">
+      <div class="bk-step-icon">
+        <span class="bk-step-num">3</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke-linecap="round"/></svg>
+      </div>
+      <div class="bk-step-label">Вибір лікаря</div>
+    </div>
+
+    <div class="bk-step">
+      <div class="bk-step-icon">
+        <span class="bk-step-num">4</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+      </div>
+      <div class="bk-step-label">Підтвердження запису</div>
+    </div>
+
+    <!-- Help card -->
+    <div class="bk-help-card">
+      <div style="display:flex;align-items:center;gap:7px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <h5>Потрібна допомога?</h5>
+      </div>
+      <p>Якщо у вас виникли питання, зверніться до нашої служби підтримки</p>
+      <a class="bk-help-btn" href="#">Зв'язатись з нами</a>
+    </div>
+  </div>
+
+  <!-- ── RIGHT CONTENT ── -->
+  <div>
+
+    <!-- Recommendation banner -->
+    {% if specialty %}
+    <div class="rec-banner">
+      <div class="rec-banner-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 0-7.78z" fill="white" stroke="white" stroke-width="1"/>
+          <path d="M7 12h2l1.5-4 3 8 1.5-4H17" stroke="#1D4ED8" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h4>Рекомендована спеціальність: <span>{{ specialty.name }}</span></h4>
+        <p>На основі введених симптомів система рекомендує звернутися до лікаря-спеціаліста.</p>
+      </div>
+      <div class="rec-banner-watermark">
+        <svg width="90" height="50" viewBox="0 0 90 50" fill="none">
+          <path d="M0 25h12l7-18 14 36 7-18h50" stroke="#2563EB" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-field" style="flex:1;min-width:160px">
+        <div class="filter-label">Пошук лікаря</div>
+        <div class="filter-input">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="docSearch" placeholder="Введіть ПІБ лікаря" oninput="filterDocs()">
+        </div>
+      </div>
+
+      <div class="filter-field" style="min-width:150px">
+        <div class="filter-label">Спеціальність</div>
+        <div class="filter-input">
+          <select id="specFilter" onchange="filterDocs()">
+            <option value="">Всі спеціальності</option>
+            {% for sp in all_specialties %}
+              <option value="{{ sp.name }}" {% if specialty and sp.id == specialty.id %}selected{% endif %}>{{ sp.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-field" style="min-width:140px">
+        <div class="filter-label">Дата прийому</div>
+        <div class="filter-input">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <input type="date" id="dateFilter" oninput="filterDocs()">
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <div class="filter-label">&nbsp;</div>
+        <button class="btn btn-primary" onclick="filterDocs()" style="padding:9px 20px">Знайти</button>
+      </div>
+    </div>
+
+    <!-- Doctor grid -->
+    <div class="doc-4-grid" id="docGrid">
+      {% for d in doctors %}
+        {% set is_female = d.full_name.split()[-1].endswith('на') or d.full_name.split()[-1].endswith('вна') %}
+        {% set rating = (4.5 + (d.experience_years % 5) * 0.1)|round(1) %}
+        {% set avail_slots = d.slots | selectattr('is_available') | list %}
+        {% set slot_times = avail_slots[:4] %}
+
+        <div class="doc-card"
+             data-name="{{ d.full_name.lower() }}"
+             data-spec="{{ d.specialty.name }}"
+             data-date="{{ avail_slots[0].slot_date if avail_slots else '' }}">
+
+          <!-- Favorite -->
+          <div class="doc-fav">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+
+          <!-- Photo -->
+          <div class="doc-photo">
+            {% if is_female %}
+            <svg viewBox="0 0 72 80" fill="none" width="62" height="68">
+              <circle cx="36" cy="26" r="16" fill="#FDDCB5"/>
+              <path d="M10 72 Q10 54 36 54 Q62 54 62 72" fill="#BFDBFE"/>
+              <ellipse cx="36" cy="14" rx="17" ry="9" fill="#92400E"/>
+              <path d="M19 22 Q20 38 36 40 Q52 38 53 22" fill="#FDDCB5"/>
+              <rect x="28" y="50" width="16" height="24" rx="4" fill="white"/>
+            </svg>
+            {% else %}
+            <svg viewBox="0 0 72 80" fill="none" width="62" height="68">
+              <circle cx="36" cy="26" r="16" fill="#FDDCB5"/>
+              <path d="M10 72 Q10 54 36 54 Q62 54 62 72" fill="#BFDBFE"/>
+              <path d="M20 20 Q20 8 36 8 Q52 8 52 20" fill="#374151"/>
+              <path d="M19 22 Q20 38 36 40 Q52 38 53 22" fill="#FDDCB5"/>
+              <rect x="28" y="50" width="16" height="24" rx="4" fill="white"/>
+            </svg>
+            {% endif %}
+          </div>
+
+          <!-- Name & specialty -->
+          <div class="doc-name">{{ d.full_name }}</div>
+          <div class="doc-spec">{{ d.specialty.name }}</div>
+
+          <!-- Stats -->
+          <div class="doc-stats">
+            <div class="doc-stat">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Стаж: <b>{{ d.experience_years }} років</b>
+            </div>
+            <div class="doc-stat">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Рейтинг: <b>{{ rating }}</b>
+            </div>
+            <div class="doc-stat">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Кабінет: <b>{{ d.room }}</b>
+            </div>
+          </div>
+
+          <!-- Available time slots -->
+          {% if slot_times %}
+          <div>
+            <div class="doc-slots-title">Доступний час</div>
+            <div class="doc-time-chips">
+              {% for sl in slot_times %}
+                <span class="time-chip">{{ sl.slot_time }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <div style="font-size:11px;color:#94A3B8">Слоти недоступні</div>
+          {% endif %}
+
+          <!-- Action button -->
+          <a class="btn btn-primary" href="{{ url_for('doctor_detail', doctor_id=d.id) }}"
+             style="width:100%;justify-content:center;font-size:13px;padding:9px">
+            Обрати
+          </a>
+        </div>
+      {% else %}
+        <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted)">
+          <div style="font-size:15px;font-weight:600;margin-bottom:6px">Лікарів не знайдено</div>
+          <a href="{{ url_for('doctors') }}" class="btn btn-outline" style="margin-top:8px">Переглянути всіх</a>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
 </div>
+
+<script>
+function filterDocs() {
+  const q    = document.getElementById('docSearch').value.toLowerCase();
+  const spec = document.getElementById('specFilter').value;
+  const date = document.getElementById('dateFilter').value;
+  document.querySelectorAll('.doc-card').forEach(card => {
+    const nm = card.dataset.name || '';
+    const sp = card.dataset.spec || '';
+    const dt = card.dataset.date || '';
+    const matchName = !q    || nm.includes(q);
+    const matchSpec = !spec || sp === spec;
+    const matchDate = !date || dt === date;
+    card.style.display = (matchName && matchSpec && matchDate) ? '' : 'none';
+  });
+}
+</script>
+
 {% endblock %}

@@ -1,19 +1,221 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card p-4">
-  <h2>Рекомендована медична спеціальність</h2>
-  <div class="p-3 bg-light rounded-4 mb-3">
-    <h3 class="text-primary">{{ specialty.name if specialty else 'Сімейний лікар' }}</h3>
-    <p>{{ specialty.description if specialty else 'Первинна консультація' }}</p>
-    <p class="text-muted">Рекомендація системи не є медичним діагнозом і не замінює консультацію лікаря.</p>
+
+{% set spec_icons = {
+  'Терапевт':         '<path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#2563EB" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  'Кардіолог':        '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 0-7.78z" stroke="#2563EB" stroke-width="1.8" fill="none"/><path d="M7 12h2l1.5-4 3 8 1.5-4H17" stroke="#2563EB" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  'Невролог':         '<circle cx="12" cy="8" r="5" stroke="#2563EB" stroke-width="1.8" fill="none"/><path d="M9 14v7M15 14v7M9 18h6" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/>',
+  'Дерматолог':       '<circle cx="12" cy="12" r="9" stroke="#2563EB" stroke-width="1.8" fill="none"/><path d="M8 10a1 1 0 1 0 2 0M14 10a1 1 0 1 0 2 0M9 16s1.5 2 3 2 3-2 3-2" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round" fill="none"/>',
+  'Гастроентеролог':  '<ellipse cx="12" cy="12" rx="9" ry="7" stroke="#2563EB" stroke-width="1.8" fill="none"/><path d="M7 12c1.5-3 8.5-3 10 0" stroke="#2563EB" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+  'Сімейний лікар':   '<circle cx="12" cy="8" r="4" stroke="#2563EB" stroke-width="1.8" fill="none"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#2563EB" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+  'Пульмонолог':      '<path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="#2563EB" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="#2563EB" stroke-width="1.8" fill="none"/><path d="M4 18h16" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/>',
+} %}
+
+{% set spec_system = {
+  'Кардіолог':        'серцево-судинною системою',
+  'Терапевт':         'дихальною та імунною системою',
+  'Невролог':         'нервовою системою',
+  'Дерматолог':       'шкірними покривами та захворюваннями шкіри',
+  'Гастроентеролог':  'травною системою',
+  'Сімейний лікар':   "загальним станом здоров'я",
+  'Пульмонолог':      'дихальною системою та легенями',
+} %}
+
+{% set spec_name  = specialty.name if specialty else 'Сімейний лікар' %}
+{% set max_score  = scores.values()|max if scores else 1 %}
+{% set icon_svg   = spec_icons.get(spec_name, spec_icons['Сімейний лікар']) %}
+{% set body_sys   = spec_system.get(spec_name, 'відповідними органами та системами') %}
+
+<div class="booking-page">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="bk-sidebar">
+    <div class="bk-sidebar-title">Кроки запису на прийом</div>
+
+    <div class="bk-steps-v2">
+      <!-- Step 1: done -->
+      <div class="bk-step-v2 done">
+        <div class="bk-step-v2-circle">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="bk-step-v2-label">Введення симптомів</div>
+      </div>
+      <!-- Step 2: active -->
+      <div class="bk-step-v2 active">
+        <div class="bk-step-v2-circle">2</div>
+        <div class="bk-step-v2-label">Рекомендація спеціальності</div>
+      </div>
+      <!-- Step 3: pending -->
+      <div class="bk-step-v2">
+        <div class="bk-step-v2-circle">3</div>
+        <div class="bk-step-v2-label">Вибір лікаря</div>
+      </div>
+      <!-- Step 4: pending -->
+      <div class="bk-step-v2">
+        <div class="bk-step-v2-circle">4</div>
+        <div class="bk-step-v2-label">Підтвердження запису</div>
+      </div>
+    </div>
+
+    <!-- Help card -->
+    <div class="bk-help-card">
+      <div style="display:flex;align-items:center;gap:7px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <h5>Потрібна допомога?</h5>
+      </div>
+      <p>Якщо у вас виникли питання, зверніться до нашої служби підтримки</p>
+      <a class="bk-help-btn" href="#">Зв'язатися з нами</a>
+    </div>
   </div>
-  {% if symptoms %}<p><b>Введені симптоми:</b> {{ symptoms|join(', ') }}</p>{% endif %}
-  {% if diagnosis %}<p><b>Попередній діагноз / скарги:</b> {{ diagnosis }}</p>{% endif %}
-  {% if scores %}
-    <h5>Рейтинг спеціальностей</h5>
-    <ul>{% for name, score in scores.items() %}<li>{{ name }} — {{ score }} балів</li>{% endfor %}</ul>
-  {% endif %}
-  <a class="btn btn-primary" href="{{ url_for('doctors', specialty_id=specialty.id if specialty else '') }}">Перейти до вибору лікаря</a>
-  <a class="btn btn-outline-secondary" href="{{ url_for('symptoms') }}">Змінити симптоми</a>
-</div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div>
+
+    <!-- TOP BANNER -->
+    <div class="rec-v2-banner">
+      <div class="rec-v2-banner-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div style="flex:1">
+        <div class="rec-v2-banner-title">Результат аналізу симптомів</div>
+        <div class="rec-v2-banner-sub">На основі введених даних система визначила<br>найбільш імовірний напрям звернення до лікаря.</div>
+      </div>
+      <div class="rec-v2-banner-illus">
+        <svg width="80" height="70" viewBox="0 0 80 70" fill="none">
+          <!-- Clipboard -->
+          <rect x="14" y="10" width="42" height="54" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+          <rect x="26" y="6" width="18" height="8" rx="3" fill="#BFDBFE" stroke="#93C5FD" stroke-width="1.5"/>
+          <!-- Lines -->
+          <line x1="22" y1="26" x2="48" y2="26" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="22" y1="34" x2="44" y2="34" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="22" y1="42" x2="40" y2="42" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Cross / check mark -->
+          <circle cx="58" cy="52" r="12" fill="#2563EB"/>
+          <path d="M52 52l4 4 8-8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- MID: symptoms + specialty -->
+    <div class="rec-v2-mid">
+
+      <!-- Left: Symptoms & Diagnosis -->
+      <div class="rec-v2-symp-card">
+        <div class="rec-v2-card-label">Введені симптоми</div>
+        {% if symptoms %}
+        <div class="rec-v2-chips">
+          {% for s in symptoms %}
+            <span class="rec-v2-chip">{{ s }}</span>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="font-size:12px;color:var(--muted)">не вказано</div>
+        {% endif %}
+
+        <div class="rec-v2-card-label" style="margin-top:14px">Попередній діагноз</div>
+        <div style="font-size:13px;color:{% if diagnosis %}var(--text){% else %}var(--muted){% endif %};font-weight:{% if diagnosis %}500{% else %}400{% endif %}">
+          {{ diagnosis if diagnosis else 'не вказано' }}
+        </div>
+      </div>
+
+      <!-- Right: Recommended specialty -->
+      <div class="rec-v2-spec-card">
+        <div class="rec-v2-card-label">Рекомендована спеціальність</div>
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-top:10px">
+          <div class="rec-v2-spec-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              {{ icon_svg | safe }}
+            </svg>
+          </div>
+          <div style="flex:1">
+            <div class="rec-v2-spec-name">{{ spec_name }}</div>
+            <div class="rec-v2-spec-desc">
+              Рекомендація сформована на основі правил відповідності симптомів та вагових коефіцієнтів.
+            </div>
+            <div class="rec-v2-top-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Найвищий бал
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /rec-v2-mid -->
+
+    <!-- BOTTOM: ranking + explanation -->
+    <div class="rec-v2-bottom">
+
+      <!-- Left: Ranking -->
+      <div class="rec-v2-rank-card">
+        <div class="rec-v2-section-title">Рейтинг можливих спеціальностей</div>
+        {% if scores %}
+          {% set ns = namespace(rank=1) %}
+          {% for name, score in scores.items() %}
+          <div class="rank-item">
+            <div class="rank-num">
+              {% if ns.rank == 1 %}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              {% else %}
+              {{ ns.rank }}
+              {% endif %}
+            </div>
+            <div class="rank-name {% if ns.rank == 1 %}rank-top{% endif %}">{{ name }}</div>
+            <div class="rank-bar-track">
+              <div class="rank-bar-fill" style="width:{{ (score * 100 // max_score)|int }}%{% if ns.rank == 1 %};background:var(--blue){% else %};background:#93C5FD{% endif %}"></div>
+            </div>
+            <div class="rank-score">{{ score }} балів</div>
+          </div>
+          {% set ns.rank = ns.rank + 1 %}
+          {% endfor %}
+        {% else %}
+          <div style="font-size:13px;color:var(--muted);padding:12px 0">Недостатньо даних для рейтингу</div>
+        {% endif %}
+      </div>
+
+      <!-- Right: Explanation -->
+      <div class="rec-v2-explain-card">
+        <div class="rec-v2-section-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="#2563EB"/></svg>
+          Пояснення рекомендації
+        </div>
+        <div class="rec-v2-explain-list">
+          <div class="rec-v2-explain-item">
+            <div class="rec-v2-explain-dot"></div>
+            Симптоми пов'язані з {{ body_sys }}.
+          </div>
+          {% if top_symptoms %}
+          <div class="rec-v2-explain-item">
+            <div class="rec-v2-explain-dot"></div>
+            Найбільшу вагу мають:
+            {% if top_symptoms|length == 1 %}{{ top_symptoms[0] }}.
+            {% else %}{{ top_symptoms[0] }} та {{ top_symptoms[1] }}.{% endif %}
+          </div>
+          {% endif %}
+          <div class="rec-v2-explain-item">
+            <div class="rec-v2-explain-dot"></div>
+            Рекомендація має інформаційний характер і не є клінічним діагнозом.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /rec-v2-bottom -->
+
+    <!-- BUTTONS -->
+    <div style="display:flex;justify-content:flex-end;gap:12px">
+      <a class="btn btn-ghost btn-lg" href="{{ url_for('symptoms') }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Повернутися до симптомів
+      </a>
+      <a class="btn btn-primary btn-lg"
+         href="{{ url_for('doctors', specialty_id=specialty.id if specialty else '') }}">
+        Перейти до вибору лікаря
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /booking-page -->
+
 {% endblock %}

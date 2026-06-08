@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+  <div>
+    <h1 style="font-size:22px;font-weight:800;margin-bottom:4px">Моя медкарта</h1>
+    <div style="font-size:13px;color:var(--muted)">{{ patient.full_name }} · {{ patient.phone or '' }}</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('symptoms') }}">+ Новий запис</a>
+</div>
+
+<div class="card card-p" style="margin-bottom:16px">
+  <div class="section-title">Особисті дані</div>
+  <table class="detail-table">
+    <tr><th>ПІБ</th><td>{{ patient.full_name }}</td></tr>
+    <tr><th>Телефон</th><td>{{ patient.phone or '—' }}</td></tr>
+  </table>
+</div>
+
+<div class="card" style="overflow:hidden">
+  <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+    <div class="section-title" style="margin:0">Історія звернень</div>
+  </div>
+  {% if appointments %}
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr style="background:var(--bg)">
+        <th style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left">Дата</th>
+        <th style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left">Лікар</th>
+        <th style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left">Спеціальність</th>
+        <th style="padding:10px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left">Статус</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:12px 16px;font-size:13px">{{ a.slot.slot_date }} {{ a.slot.slot_time }}</td>
+        <td style="padding:12px 16px;font-size:13px;font-weight:500">{{ a.doctor.full_name }}</td>
+        <td style="padding:12px 16px;font-size:13px;color:var(--blue)">{{ a.recommended_specialty }}</td>
+        <td style="padding:12px 16px"><span class="badge badge-green">{{ a.status }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:48px 20px;text-align:center;color:var(--muted)">
+    <div style="font-size:14px;font-weight:600;margin-bottom:6px">Записів немає</div>
+    <a href="{{ url_for('symptoms') }}" class="btn btn-primary" style="margin-top:10px">Записатися до лікаря</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

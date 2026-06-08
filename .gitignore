@@ -46,3 +46,5 @@ logs/
 # Flask
 instance/
 .webassets-cache
+.claude/
+task.md

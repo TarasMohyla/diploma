@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+  <div class="display-6 text-success">✓ Запис успішно підтверджено</div>
+  <hr>
+  <p><b>Пацієнт:</b> {{ appointment.patient.full_name }}</p>
+  <p><b>Лікар:</b> {{ appointment.doctor.full_name }}</p>
+  <p><b>Спеціальність:</b> {{ appointment.recommended_specialty }}</p>
+  <p><b>Дата і час:</b> {{ appointment.slot.slot_date }} {{ appointment.slot.slot_time }}</p>
+  <p><b>Кабінет:</b> {{ appointment.doctor.room }}</p>
+  <p><b>Статус:</b> {{ appointment.status }}</p>
+  <a class="btn btn-primary" href="{{ url_for('my_appointments') }}">Перейти до моїх записів</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">На головну</a>
+</div>
+{% endblock %}

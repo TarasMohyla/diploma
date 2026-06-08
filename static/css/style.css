@@ -1,0 +1,10 @@
+:root { --blue:#0d6efd; --light:#f5f8ff; --text:#12223b; }
+body { background: #f7f9fc; color: var(--text); }
+.navbar-brand span { font-weight: 700; }
+.hero { background: linear-gradient(135deg, #eef5ff, #ffffff); border: 1px solid #dbe7ff; border-radius: 24px; }
+.card { border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 8px 24px rgba(15, 23, 42, .05); }
+.badge-soft { background: #eaf2ff; color: #0d6efd; border-radius: 999px; padding: .45rem .75rem; }
+.step { border-left: 3px solid #0d6efd; padding-left: 12px; margin-bottom: 10px; }
+.btn { border-radius: 12px; }
+.form-control, .form-select { border-radius: 12px; }
+.symptom-chip { border: 1px solid #cfe2ff; border-radius: 999px; padding: .35rem .65rem; margin: .2rem; display: inline-block; background: #fff; }

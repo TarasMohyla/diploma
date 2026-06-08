@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Сторінка вибору лікаря</h2>
+{% if specialty %}<div class="alert alert-primary">Рекомендована спеціальність: <b>{{ specialty.name }}</b></div>{% endif %}
+<div class="row">
+{% for d in doctors %}
+  <div class="col-md-4 mb-3"><div class="card p-3 h-100">
+    <h5>{{ d.full_name }}</h5>
+    <p><b>{{ d.specialty.name }}</b> · {{ d.room }} · стаж {{ d.experience_years }} років</p>
+    <p class="small text-muted">{{ d.description }}</p>
+    <a class="btn btn-primary" href="{{ url_for('doctor_detail', doctor_id=d.id) }}">Обрати</a>
+  </div></div>
+{% else %}<p>Лікарів не знайдено.</p>{% endfor %}
+</div>
+{% endblock %}

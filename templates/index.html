@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero p-5">
+  <div class="row align-items-center">
+    <div class="col-lg-7">
+      <h1 class="display-5 fw-bold">Онлайн-запис до лікаря на основі попереднього діагнозу</h1>
+      <p class="lead">Система допомагає пацієнту ввести симптоми, отримати рекомендовану спеціальність, обрати лікаря та підтвердити запис на доступний час.</p>
+      <a class="btn btn-primary btn-lg" href="{{ url_for('symptoms') if current_user else url_for('login') }}">Розпочати запис</a>
+    </div>
+    <div class="col-lg-5">
+      <div class="card p-4">
+        <h5>Як це працює</h5>
+        <div class="step">1. Введення симптомів</div>
+        <div class="step">2. Отримання рекомендації</div>
+        <div class="step">3. Вибір лікаря та часу</div>
+        <div class="step">4. Підтвердження запису</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

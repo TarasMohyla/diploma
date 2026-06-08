@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+  <h2>{{ doctor.full_name }}</h2>
+  <p>Спеціальність: <b>{{ doctor.specialty.name }}</b> · {{ doctor.room }}</p>
+  <h4>Доступний час прийому</h4>
+  {% if slots %}
+  <form method="post" action="{{ url_for('create_appointment', slot_id=slots[0].id) }}" id="bookingForm">
+    <div class="row">
+    {% for s in slots %}
+      <div class="col-md-3 mb-2"><button type="submit" formaction="{{ url_for('create_appointment', slot_id=s.id) }}" class="btn btn-outline-primary w-100">{{ s.slot_date }}<br>{{ s.slot_time }}</button></div>
+    {% endfor %}
+    </div>
+  </form>
+  {% else %}<p>Немає доступних слотів.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+  <h2>Рекомендована медична спеціальність</h2>
+  <div class="p-3 bg-light rounded-4 mb-3">
+    <h3 class="text-primary">{{ specialty.name if specialty else 'Сімейний лікар' }}</h3>
+    <p>{{ specialty.description if specialty else 'Первинна консультація' }}</p>
+    <p class="text-muted">Рекомендація системи не є медичним діагнозом і не замінює консультацію лікаря.</p>
+  </div>
+  {% if symptoms %}<p><b>Введені симптоми:</b> {{ symptoms|join(', ') }}</p>{% endif %}
+  {% if diagnosis %}<p><b>Попередній діагноз / скарги:</b> {{ diagnosis }}</p>{% endif %}
+  {% if scores %}
+    <h5>Рейтинг спеціальностей</h5>
+    <ul>{% for name, score in scores.items() %}<li>{{ name }} — {{ score }} балів</li>{% endfor %}</ul>
+  {% endif %}
+  <a class="btn btn-primary" href="{{ url_for('doctors', specialty_id=specialty.id if specialty else '') }}">Перейти до вибору лікаря</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('symptoms') }}">Змінити симптоми</a>
+</div>
+{% endblock %}

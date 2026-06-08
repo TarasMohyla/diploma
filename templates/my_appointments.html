@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Мої записи</h2>
+<table class="table table-striped bg-white">
+<tr><th>ID</th><th>Лікар</th><th>Спеціальність</th><th>Дата</th><th>Час</th><th>Статус</th></tr>
+{% for a in appointments %}<tr><td>{{ a.id }}</td><td>{{ a.doctor.full_name }}</td><td>{{ a.recommended_specialty }}</td><td>{{ a.slot.slot_date }}</td><td>{{ a.slot.slot_time }}</td><td>{{ a.status }}</td></tr>{% endfor %}
+</table>
+{% endblock %}

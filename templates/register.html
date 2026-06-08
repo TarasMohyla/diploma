@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4 mx-auto" style="max-width:560px">
+  <h2>Реєстрація пацієнта</h2>
+  <form method="post">
+    <label class="form-label">ПІБ</label><input class="form-control mb-3" name="full_name" required>
+    <label class="form-label">Телефон</label><input class="form-control mb-3" name="phone">
+    <label class="form-label">Email</label><input class="form-control mb-3" type="email" name="username" required>
+    <label class="form-label">Пароль</label><input class="form-control mb-3" type="password" name="password" required>
+    <button class="btn btn-primary">Зареєструватися</button>
+  </form>
+</div>
+{% endblock %}

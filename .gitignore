@@ -48,3 +48,4 @@ instance/
 .webassets-cache
 .claude/
 task.md
+CLAUDE.md
